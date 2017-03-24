@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Your text will appear here</string>
+    <string name="buttonLabel">buttonLabel</string>
+    <string name="input_label">Please input new text</string>
+</resources>
