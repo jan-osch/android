@@ -1,30 +1,34 @@
 package me.grzesik.helloworld;
 
+import android.renderscript.RSInvalidStateException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
-enum CalculatorOperation {
-    PLUS,
-    MINUS,
-    MULTIPLY,
-    DIVIDE,
-    NONE,
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+enum CalculatorState {
+    WAITING_FOR_FIRST_NUMBER,
+    WAITING_FOR_NEXT_OPERATOR,
+    WAITING_FOR_OPERATOR,
+    WAITING_FOR_SECOND_NUMBER,
+    READY_TO_COMPUTE
 }
 
 public class CalculatorActivity extends AppCompatActivity {
 
     private StringBuilder secondNumber;
     private StringBuilder firstNumber;
-    private CalculatorOperation operation;
-    private String previousResult;
+    private CalculatorState state;
+    private String operation;
 
     public CalculatorActivity() {
         this.firstNumber = new StringBuilder();
         this.secondNumber = new StringBuilder();
-        this.previousResult = "";
-        this.operation = CalculatorOperation.NONE;
+        this.state = CalculatorState.WAITING_FOR_FIRST_NUMBER;
     }
 
     @Override
@@ -102,85 +106,102 @@ public class CalculatorActivity extends AppCompatActivity {
         this.computeResult();
     }
 
+    public void handleParsePressed(View view) {
+        EditText e = (EditText) findViewById(R.id.editText);
+
+        Pattern pattern = Pattern.compile("(\\d+\\.?\\d*)\\s*(\\*|\\+|-|\\/)\\s*(\\d+\\.?\\d*)");
+
+        String s = e.getText().toString();
+        Matcher matcher = pattern.matcher(s);
+
+        if (matcher.matches()) {
+            this.firstNumber = new StringBuilder(matcher.group(1));
+            this.operation = matcher.group(2);
+            this.secondNumber = new StringBuilder(matcher.group(3));
+
+            this.state = CalculatorState.READY_TO_COMPUTE;
+            this.computeResult();
+        }
+
+        e.setText("");
+    }
+
 
     private void computeResult() {
-        if(this.operation != CalculatorOperation.NONE) {
-            String firstStringRepresentation = this.previousResult.length() == 0
-                    ? this.firstNumber.toString()
-                    : this.previousResult;
-
-            Double firstNumber = Double.valueOf(firstStringRepresentation);
+        if (this.state == CalculatorState.READY_TO_COMPUTE) {
+            Double firstNumber = Double.valueOf(this.firstNumber.toString());
             Double secondNumber = Double.valueOf(this.secondNumber.toString());
             Double result = 0.0;
 
             switch (this.operation) {
-                case MINUS:
+                case "-":
                     result = firstNumber - secondNumber;
                     break;
-                case PLUS:
+                case "+":
                     result = firstNumber + secondNumber;
                     break;
-                case MULTIPLY:
+                case "*":
                     result = firstNumber * secondNumber;
                     break;
-                case DIVIDE:
+                case "/":
                     result = firstNumber / secondNumber;
                     break;
             }
 
             this.clear();
             this.setResultText(result.toString());
-            this.previousResult = result.toString();
+            this.firstNumber.append(result.toString());
+
+            this.state = CalculatorState.WAITING_FOR_NEXT_OPERATOR;
         }
     }
 
 
     private void addOperation(String operation) {
-        if (this.operation != CalculatorOperation.NONE) {
-            this.computeResult();
-        }
+        if (this.state == CalculatorState.WAITING_FOR_OPERATOR || this.state == CalculatorState.WAITING_FOR_NEXT_OPERATOR) {
+            this.operation = operation;
 
-        switch (operation) {
-            case "+":
-                this.operation = CalculatorOperation.PLUS;
-                break;
-            case "-":
-                this.operation = CalculatorOperation.MINUS;
-                break;
-            case "/":
-                this.operation = CalculatorOperation.DIVIDE;
-                break;
-            case "*":
-                this.operation = CalculatorOperation.MULTIPLY;
-                break;
-        }
+            this.appendToResult(" ");
+            this.appendToResult(operation);
+            this.appendToResult(" ");
 
-        this.appendToResult(" ");
-        this.appendToResult(operation);
-        this.appendToResult(" ");
+            this.state = CalculatorState.WAITING_FOR_SECOND_NUMBER;
+        }
     }
 
-
-    private void addNumberPart(String numberPart) {
-        if (this.operation == CalculatorOperation.NONE) {
-            if (previousResult.length() != 0) {
-                previousResult = "";
-                this.setResultText("");
-            }
-            this.firstNumber.append(numberPart);
-        } else {
-            this.secondNumber.append(numberPart);
+    private void addNumberPart(String digitOrComma) {
+        if (this.state == CalculatorState.WAITING_FOR_NEXT_OPERATOR) {
+            this.clear();
         }
 
-        this.appendToResult(numberPart);
+        if (this.state == CalculatorState.WAITING_FOR_FIRST_NUMBER) {
+            this.firstNumber.append(digitOrComma);
+            this.state = CalculatorState.WAITING_FOR_OPERATOR;
+
+        } else if (this.state == CalculatorState.WAITING_FOR_OPERATOR) {
+            this.firstNumber.append(digitOrComma);
+
+        } else if (this.state == CalculatorState.WAITING_FOR_SECOND_NUMBER) {
+            this.secondNumber.append(digitOrComma);
+            this.state = CalculatorState.READY_TO_COMPUTE;
+
+        } else if (this.state == CalculatorState.READY_TO_COMPUTE) {
+            this.secondNumber.append(digitOrComma);
+        } else {
+            throw new RSInvalidStateException("Calculator should not be in this state");
+        }
+
+        this.appendToResult(digitOrComma);
     }
 
     private void clear() {
         setResultText("");
-        this.previousResult = "";
+        EditText e = (EditText) findViewById(R.id.editText);
+        e.setText("");
+        this.operation = "";
         this.firstNumber.setLength(0);
         this.secondNumber.setLength(0);
-        this.operation = CalculatorOperation.NONE;
+        this.state = CalculatorState.WAITING_FOR_FIRST_NUMBER;
     }
 
     private void setResultText(String text) {

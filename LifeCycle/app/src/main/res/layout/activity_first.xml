@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_first"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="me.grzesik.lifecycle.FirstActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Text View"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="29dp"
+        android:id="@+id/firstCreateTV" />
+
+    <TextView
+        android:text="Restart Text View"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/firstCreateTV"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="16dp"
+        android:id="@+id/firstRestartTV" />
+
+    <TextView
+        android:text="Resume Text View"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/firstRestartTV"
+        android:layout_marginTop="15dp"
+        android:id="@+id/firstResumeTV" />
+
+    <TextView
+        android:text="Start Text View"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="17dp"
+        android:id="@+id/firstStartTV"
+        android:layout_below="@+id/firstResumeTV"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="Switch to activity two"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:id="@+id/switchToActivityTwoButton" />
+</RelativeLayout>

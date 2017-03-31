@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tekst pojawi się tutaj</string>
     <string name="buttonLabel">Zmiana</string>
     <string name="input_label">Wpisz nowy tekst</string>
+    <string name="app_name">Calcoolator</string>
 </resources>
